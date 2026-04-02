@@ -1,2 +1,3 @@
-# PSD Exam 2026
-Project repository for the 2026 PSD exam @unisa.
+# Esame PSD 2026
+
+Repository per il progetto per l'esame di PSD @ unisa.
