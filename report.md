@@ -68,3 +68,63 @@
                 Atteso: tutti e tre ritornano 0
                 Scopo:  verificare la corretta gestione del tombstone — la cella liberata viene riutilizzata
 
+
+#### eliminaStudente(const char* matricola);
+
+        SPECIFICA SINTATTICA:
+
+            eliminaStudente(cosnt char*)->int
+            eliminaStudente(matricola) ->int
+
+        SPECIFICA SEMANTICA
+
+            Cerca lo studente con la matricola indicata nella tabella, libera la memoria allocata per i suoi campi e marca la cella come tombstone (occupato = -1) per preservare la correttezza del linear probing.
+
+        PRECONDIZIONI
+            matricola!=NULL
+            che lo studente con quella matricola esiste nella tabella
+
+        POSTCONDIZIONI 
+
+            Successo (0) -> i campi nome, cognome, corsoDiLaurea e matricola sono stati liberati con free, la cella è marcata come tombstone, il contatore degli studenti è decrementato di 1
+            Errore (-1) -> la tabella rimane invariata; si verifica se: matricola è NULL oppure lo studente non esiste nella tabella
+
+        Effetti collaterali 
+        La memoria precedentemente allocata per lo studente viene rilasciata
+
+        RAZIONALE CASI DI TEST
+            Obiettivo
+                Verificare che eliminaStudente rimuova correttamente uno studente esistente, gestisca i casi di errore senza corrompere la struttura e preservi la correttezza del linear probing tramite il tombstone.
+
+            Casi di Test
+                Caso 1 — Eliminazione valida
+                Input:  inserisci "N46001234", poi elimina "N46001234"
+                Atteso: ritorna 0, cercaStudente("N46001234") ritorna NULL
+                Scopo:  verificare il caso base di funzionamento corretto
+
+                Caso 2 — Matricola non esistente
+                Input:  elimina "N46999999" (mai inserita)
+                Atteso: ritorna -1, tabella invariata
+                Scopo:  verificare che il sistema non corrompa nulla su chiave inesistente
+                
+                Caso 3 — Parametro NULL
+                Input:  eliminaStudente(NULL)
+                Atteso: ritorna -1, nessun crash
+                Scopo:  verificare la robustezza ai parametri invalidi
+
+                Caso 4 — Doppia eliminazione
+                Input:  inserisci "N46001234", elimina "N46001234", elimina "N46001234" di nuovo
+                Atteso: prima eliminazione ritorna 0, seconda ritorna -1
+                Scopo:  verificare che il tombstone non venga trattato come elemento attivo
+
+                Caso 5 — Eliminazione e reinserimento
+                Input:  inserisci "N46001234", elimina "N46001234", reinserisci "N46001234"
+                Atteso: tutte e tre le operazioni ritornano 0
+                Scopo:  verificare che la cella tombstone venga correttamente riutilizzata
+
+                Caso 6 — Eliminazione con collisione attiva
+                Input:  inserisci due studenti con stessa posizione hash,
+                elimina il primo, cerca il secondo
+                Atteso: eliminazione ritorna 0, cercaStudente del secondo ritorna puntatore valido
+                Scopo:  verificare che il tombstone non spezzi la catena di probing
+

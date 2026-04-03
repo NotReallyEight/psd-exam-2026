@@ -9,5 +9,5 @@ struct studenteInterno{
     char*cognome; //"" cognome studente
     char* matricola;//"" matricola studente
     char*corsoDiLaurea; // "" corso di laurea studente
-    int attivo; // utile per la tabella 1= attivo; 0 =libero, -1=tombstone
+    int occupato; // utile per la tabella 1= attivo; 0 =libero, -1=tombstone
 };
