@@ -1,13 +1,29 @@
 # Report Progetto PSD
 
+## NOTE GENERALI
 
-## ADT-studente
+    Al interno di ogni adt ci saranno delle funzioni di "utility" ossia funzioni che permettono di 
+    leggere i campi interni dall'esterno ma in modo controllato, senza MAI poter accedere direttamente
+    alla struttura (rispetttando l'information hiding)
+    es pratico: nel main ci serve sapere il posto assegnato di una prenotazione
+        printf("%d", p->posto); SBAGLIATO
+        printf("%d", postoAssegnato(p)); CORRETTO
+
+    inoltre supponendo che il nostro software potrebbe essere usato da chiunque
+    per preservare ancora di piu la sicurezza abbiamo deciso di usare il 
+    "const" sui parametri in input delle funzioni, in modo da dare una sorta
+    di "garanzia" al utente. (il const serve a non far modificare dalla funzione gli input che riceve).
+
+
+### ADT-studente
 
    Motivazione scelta ADT:
 
+
+
 #### Funzioni:
         
-#### creaStudente(const char* nome, const char* cognome, const char* matricola, const char* corsoDiLaurea);
+##### creaStudente(const char* nome, const char* cognome, const char* matricola, const char* corsoDiLaurea);
 
         SPECIFICA SINTATTICA:
             creaStudente(const char*,const char*, const char*, const char*,) -> int
@@ -69,7 +85,7 @@
                 Scopo:  verificare la corretta gestione del tombstone — la cella liberata viene riutilizzata
 
 
-#### eliminaStudente(const char* matricola);
+##### eliminaStudente(const char* matricola);
 
         SPECIFICA SINTATTICA:
 
@@ -127,4 +143,83 @@
                 elimina il primo, cerca il secondo
                 Atteso: eliminazione ritorna 0, cercaStudente del secondo ritorna puntatore valido
                 Scopo:  verificare che il tombstone non spezzi la catena di probing
+
+
+
+
+### ADT-prenotazioni
+
+#### Funzioni:
+
+##### int creaPrenotazione(const char*matricola, const char *data, int fasciaOraria, int posto);
+
+        SPECIFICA SINTATTICA
+            creaPrenotazioni(const char*, const char*, int, int)-> int
+            creaPrenotazioni (matricola, data, fasciaOraria, posto)->int
+
+        SPECIFICA SEMANTICA
+            alloca dinamicamente una nuova prenotazione copiando i dati passati come parametro e la inserisce nella lista. La combinazione matricola + data + fasciaOraria deve essere univoca: uno studente non può avere due prenotazioni nella stessa fascia dello stesso giorno.
+
+        PRECONDIZIONI
+            matricola !=NULL
+            data != NULL
+            0<= fasciaOraria <= NUM_FASCE
+            0<= posto<= NUM_POSTI
+            Non esiste già una prenotazione con la stessa combinazione matricola + data + fasciaOraria
+            Il posto richiesto è disponibile nella fascia oraria indicata
+
+        POSTCONDIZIONI
+            Successo (0) -> la prenotazione è stata inserita nella lista, la memoria è stata allocata correttamente, il contatore delle prenotazioni è incrementato di 1, il posto risulta non più disponibile
+            Errore (-1) -> la lista rimane invariata, nessuna memoria viene trattenuta; si verifica se: matricola o data sono NULL, fasciaOraria o posto sono negativi, esiste già una prenotazione duplicata, malloc fallita
+
+
+        RAZIONALE DI CASI
+        Razionale dei Casi di Test — creaPrenotazione
+
+        Obiettivo
+        Verificare che creaPrenotazione inserisca correttamente una prenotazione nei casi validi e gestisca tutti i casi di errore senza corrompere la struttura.
+
+        Caso 1 — Inserimento valido
+            Input:  matricola="N46001234", data="2026-05-10" fasciaOraria=0, posto=5
+            Atteso: ritorna 0, cercaPrenotazione restituisce puntatore valido
+            Scopo:  verificare il caso base di funzionamento corretto
+
+        Caso 2 — Prenotazione duplicata
+            Input:  inserisci due volte matricola="N46001234", data="2026-05-10", fasciaOraria=0
+            Atteso: primo inserimento ritorna 0, secondo ritorna -1
+            Scopo:  verificare che uno studente non possa prenotare due volte nella stessa fascia dello stesso giorno
+
+        Caso 3 — Parametro NULL
+            Input:  matricola=NULL, data="2026-05-10", fasciaOraria=0, posto=5
+            Atteso: ritorna -1, lista invariata
+            Scopo:  verificare la robustezza ai parametri invalidi
+
+        Caso 4 — Fascia oraria non valida
+            Input:  matricola="N46001234", data="2026-05-10", fasciaOraria=-1, posto=5
+            Atteso: ritorna -1, lista invariata
+            Scopo:  verificare il controllo sul range 0 <= fasciaOraria < NUM_FASCE
+
+        Caso 5 — Fascia oraria fuori range
+            Input:  matricola="N46001234", data="2026-05-10", fasciaOraria=5, posto=5
+            Atteso: ritorna -1, lista invariata
+            Scopo:  verificare che un indice >= NUM_FASCE venga rifiutato
+
+        Caso 6 — Posto negativo
+            Input:  matricola="N46001234", data="2026-05-10", fasciaOraria=0, posto=-1
+            Atteso: ritorna -1, lista invariata
+            Scopo:  verificare il controllo sul valore del posto
+
+        Caso 7 — Stesso studente, fascia diversa
+            Input:  
+            inserisci matricola="N46001234", data="2026-05-10", fasciaOraria=0 
+            inserisci matricola="N46001234", data="2026-05-10", fasciaOraria=1
+            Atteso: entrambi ritornano 0
+            Scopo:  verificare che uno studente possa prenotare in fasce diverse
+
+        Caso 8 — Inserimenti multipli validi
+            Input:  5 studenti con matricole diverse, stessa fascia oraria
+            Atteso: tutti ritornano 0, tutti trovabili con cercaPrenotazione
+            Scopo:  verificare stabilità su inserimenti successivi
+
+
 
