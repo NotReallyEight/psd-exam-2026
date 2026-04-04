@@ -56,3 +56,6 @@ dkms.conf
 
 # Output files
 output/
+
+# VSCode configuration files
+.vscode/
