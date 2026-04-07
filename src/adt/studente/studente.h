@@ -21,8 +21,13 @@ void stampaStudente(studente s);
 //stampaStudente: stampa a schermo i dati dello studente
 
 
-//funzioni utili internamente
-//quidni accesso in sola lettura ai campi interni (information hiding)
+/*
+funzioni utili per leggere i campi interni di una 
+prenotazione dall'esterno in modo controllato,
+senza mai accedere direttamente alla struct
+
+rispettando quindi l'information hiding
+*/
 const char *matricola(studente s); //ritorna la matricola
 const char *nome(studente s); //ritorna il nome
 const char*cognome(studente s); //ritorna il cognome
