@@ -222,4 +222,81 @@
             Scopo:  verificare stabilità su inserimenti successivi
 
 
+#####  int annullaPrenotazione(const char *matricola, const char *data, int fasciaOraria);
+
+        SPECIFICA SINTATTTICA:
+            annullaOrenotazione(const char*, const char* int)->int
+            annullaPrenotazione(matricola, data,fasciaOraria)-> int
+
+        SPECIFICA SEMANTICA
+            La funzione cerca nella lista la prenotazione identificata dalla combinazione matricola + data + fasciaOraria, la rimuove dalla lista, libera la memoria allocata e rende il posto nuovamente disponibile.
+
+        PRECONDIZIONI
+            matricola!=NULL
+            data!=NULL
+            0<=fasciaOraria<=NUM_FASCE
+            Esiste una prenotazione con la combinazione matricola + data + fasciaOraria
+
+        POSTCONDIZIONI
+            Successo (0) -> la prenotazione è stata rimossa dalla lista, la memoria è stata liberata, il posto torna disponibile, il contatore delle prenotazioni è decrementato di 1
+            Errore (-1) -> la lista rimane invariata; si verifica se: matricola o data sono NULL, fasciaOraria fuori range, prenotazione non trovata
+
+            Effetti collaterali
+            La memoria allocata per la prenotazione viene rilasciata
+
+        RAZIONALE CASI 
+
+        Obiettivo
+        Verificare che annullaPrenotazione rimuova correttamente una prenotazione esistente, liberi la memoria e gestisca tutti i casi di errore senza corrompere la lista.
+
+        Caso 1 — Annullamento valido
+            Input:  inserisci matricola="N46001234", data="2026-05-10", fasciaOraria=0 poi annulla matricola="N46001234", data="2026-05-10", fasciaOraria=0
+            Atteso: ritorna 0, cercaPrenotazione restituisce NULL
+            Scopo:  verificare il caso base di funzionamento corretto
+
+        Caso 2 — Prenotazione non esistente
+        Input:  annulla matricola="N46999999", data="2026-05-10", fasciaOraria=0 (mai inserita)
+        Atteso: ritorna -1, lista invariata
+        Scopo:  verificare che il sistema non corrompa nulla su prenotazione inesistente
+
+        Caso 3 — Parametro NULL
+            Input:  annullaPrenotazione(NULL, "2026-05-10", 0)
+            Atteso: ritorna -1, lista invariata
+            Scopo:  verificare la robustezza ai parametri invalidi
+
+        Caso 4 — Fascia oraria non valida
+            Input:  annullaPrenotazione("N46001234", "2026-05-10", -1)
+            Atteso: ritorna -1, lista invariata
+            Scopo:  verificare il controllo sul range 0 <= fasciaOraria < NUM_FASCE
+
+        Caso 5 — Doppio annullamento
+            Input:  inserisci e annulla matricola="N46001234", data="2026-05-10", fasciaOraria=0 poi annulla di nuovo la stessa prenotazione
+            Atteso: primo annullamento ritorna 0, secondo ritorna -1
+            Scopo:  verificare che una prenotazione già rimossa non possa essere annullata una seconda volta
+
+        Caso 6 — Annullamento e reinserimento
+            Input:  inserisci, annulla e reinserisci matricola="N46001234", data="2026-05-10", fasciaOraria=0, posto=5
+            Atteso: tutte e tre le operazioni ritornano 0
+            Scopo:  verificare che dopo un annullamento sia possibile reinserire la stessa prenotazione
+
+        Caso 7 — Annullamento in mezzo alla lista
+            Input:  inserisci 3 prenotazioni diverse, annulla quella in mezzo
+            Atteso: annullamento ritorna 0, le altre due sono ancora trovabili con cercaPrenotazione
+            Scopo:  verificare la corretta gestione dei puntatori prev e next durante la rimozione di un nodo centrale
+
+##### prenotazione cercaPrenotazione(const char *matricola, const char *data,int fasciaOraria)
+
+        SPECIFICA SINTATTICA
+            cercaprenotazione(const char*,const char*, int)->prenotazione
+            cercaPrenotazione(matricola, data,fasciaOraria)->prenotazione
+
+        SPECIFICASEMANTICA
+            Scorre la lista delle prenotazioni cercando quella identificata dalla combinazione univoca matricola + data + fasciaOraria. Restituisce un puntatore alla prenotazione trovata, accessibile solo tramite le funzioni di utility.
+
+            PRECONDIZIONI
+             
+
+
+
+
 
