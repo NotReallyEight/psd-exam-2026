@@ -141,7 +141,8 @@
                 Caso 6 — Eliminazione con collisione attiva
                 Input:  inserisci due studenti con stessa posizione hash,
                 elimina il primo, cerca il secondo
-                Atteso: eliminazione ritorna 0, cercaStudente del secondo ritorna puntatore valido
+                Atteso: eliminazione ritorna 0, cercaStudente del secondo ritorna puntatore
+                        valido
                 Scopo:  verificare che il tombstone non spezzi la catena di probing
 
 
