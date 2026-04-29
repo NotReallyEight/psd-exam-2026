@@ -12,7 +12,7 @@
 [linea]
 [testo normale] testo
 
-[Intersezione 1] ADT Studente
+[Titolo] ADT Studente
 [linea]
 
 [Intersezione 2] creaStudente(...)
