@@ -15,16 +15,16 @@
 [Titolo] ADT Studente
 [linea]
 
-[Intersezione 2] creaStudente(...)
+[Intersezione 1] creaStudente(...)
 [linea corta]
 
-[intersezione 3] Specifica Sintattica
+[intersezione 2] Specifica Sintattica
 [blocco codice]
 
-[intersezione 3] Specifica Semantica
+[intersezione 2] Specifica Semantica
 [testo normale] testo
 
-[intersezione 3] Precondizioni
+[intersezione 2] Precondizioni
 [lista casi di razionale]
 
 [sottotitolo] footer o numero pag
