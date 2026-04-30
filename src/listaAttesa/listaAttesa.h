@@ -57,6 +57,6 @@ int codaVuota(int fasciaOraria);
 int dimensioneCoda(int fasciaOraria);
 
 
-char *matricolaCoda(elementoCoda e); /* restituisce la matricola */
+const char *matricolaCoda(elementoCoda e); /* restituisce la matricola */
 int fasciaCoda(elementoCoda e);   /* restituisce la fascia oraria */
 
