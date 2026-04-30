@@ -24,7 +24,7 @@ senza mai accedere direttamente alla struct
 
 rispettando quindi l'information hidig
 */
-static char *matricolaPrenotazione(prenotazione p); //restituisce la matricola
-static char *dataPrenotazione(prenotazione p);//restituisce la data
-static int fasciaOraria(prenotazione p);//restituisce la fascia oraria
-static int postoAssegnato(prenotazione p);//restituisce il posto assegnato
+const char *matricolaPrenotazione(prenotazione p); //restituisce la matricola
+const char *dataPrenotazione(prenotazione p);//restituisce la data
+int fasciaOraria(prenotazione p);//restituisce la fascia oraria
+int postoAssegnato(prenotazione p);//restituisce il posto assegnato
