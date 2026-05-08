@@ -4,10 +4,17 @@ typedef struct studenteInterno* studente;
 //l'utente vede solo il puntatore alla struttura (per garantire l'information hiding)
 
 
+typedef struct tabellaStudentiInterna *tabellaStudenti;
 
 
-//aggiungere la tabella studenti (tabella hash)
-//con relative funzioni crea e distruggi
+
+int creaTabella(int capacita);
+//creaTabella: alloca e inserisce una nuova tabella nel sistema
+
+
+
+void distruggiTabella();
+//distruggiTabella: rimuove la tabella nel sistema
 
 
 

@@ -14,13 +14,13 @@ typedef struct studenteInterno{
 
 
 // struttura contenitore per la tabella hash
-typedef struct tabellaStudenti { 
+typedef struct tabellaStudentiInterna { 
     studenteInterno *celle; // puntatore all'array di record studenteinterno
     int capacita; // numero totale di slot fisici allocati nell'array
     int dimensione; // conteggio effettivo degli studenti inseriti e attivi
-} tabellaStudenti;
+} tabellaStudentiInterna;
 
-static tabellaStudenti *tabella = NULL; // riferimento statico alla tabella
+static tabellaStudentiInterna *tabella = NULL; // riferimento statico alla tabella
 
 static unsigned int hash(const char *matricola, int capacita) { // funzione hash djb2
     unsigned int h = 5381; // valore standard iniziale per la distribuzione
@@ -118,7 +118,7 @@ int creaTabella(int capacita) { // inizializzazione della struttura dati
     if (capacita <= 0) 
         return -1; // controllo validita parametro di input
 
-    tabella = (tabellaStudenti *)malloc(sizeof(tabellaStudenti)); // alloca memoria per l'header della tabella
+    tabella = (tabellaStudentiInterna *)malloc(sizeof(tabellaStudentiInterna)); // alloca memoria per l'header della tabella
     if (!tabella) 
         return -1; // controllo errore malloc header
 
