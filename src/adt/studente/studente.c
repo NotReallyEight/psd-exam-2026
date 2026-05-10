@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "studente.h";
+#include "studente.h"
 
 // definizione struttura dati privata per lo studente
 typedef struct studenteInterno{ 
@@ -155,9 +155,10 @@ void distruggiTabella() { // deallocazione completa della memoria
 int creaStudente(const char *nome, const char *cognome, const char *matricola, const char *corsoDiLaurea) { // inserimento nuovo studente
     int slot; // variabile per contenere l'indice di destinazione
 
-    if (!tabella || !nome || !cognome || !matricola || !corsoDiLaurea) 
-        return -1; // validazione parametri
-
+    if (!tabella || !nome || !cognome || !matricola || !corsoDiLaurea) { //validazione paramerti
+    printf("Errore: parametri non validi.\n");
+    return -1; 
+}
 
     if (tabella->dimensione == tabella->capacita) // controllo se la tabella e fisicamente piena
         if (rehash() == -1) 
@@ -198,8 +199,10 @@ int eliminaStudente(const char *matricola) { // rimozione logica e fisica di uno
         return -1; // validazione input
 
     pos = trovaPosizione(matricola); // cerca l'indice associato alla matricola
-    if (pos == -1) 
-        return -1; // se non trovato ritorna errore
+    if (pos == -1) { //se non trovato ritorna errore
+    printf("Errore: studente non trovato.\n");
+    return -1; 
+}
 
 
     free(tabella->celle[pos].matricola); // libera memoria stringa matricola

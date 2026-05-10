@@ -18,6 +18,9 @@ void distruggiTabella();
 
 
 
+void stampaTabella();
+// stampaTabella: stampa studenti registrati
+
 
 int creaStudente(const char*nome, const char*cognome, const char* matricola, const char*corsoDiLaurea);
 //creaStudente: alloca e inserisce un nuovo studente nel sistema
