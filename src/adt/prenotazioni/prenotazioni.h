@@ -1,6 +1,14 @@
+#define NUM_FASCE 5
+
 
 typedef struct prenotazioneInterna * prenotazione;
 
+int  creaListaPrenotazioni();
+// creaListaPrenotazioni: crea lista prenotazioni
+
+
+void distruggiListaPrenotazioni();
+// disstruggiListaPrenotazioni: distrgge lista prenotazioni
 
 
 int creaPrenotazione(const char*matricola, const char*data, int fasciaOraria, int posto);

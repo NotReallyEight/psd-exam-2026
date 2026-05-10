@@ -110,6 +110,7 @@ int creaPrenotazione(const char *matricola, const char *data, int fasciaOraria, 
 
     prenotazioneInterna *nodo, *curr; // puntatori di appoggio
 
+
     if (!lista || !matricola || !data) { // controllo validita parametri
         printf("Errore: parametri non validi.\n"); // messaggio errore parametri
         return -1; // ritorno errore
