@@ -1,62 +1,280 @@
+/*
+* File: studente.h
+* ---
+* Gestione di un ADT per l'anagrafica studenti tramite
+* tabella dedicata con accesso controllato ai dati.
+*
+* Il modulo consente la creazione, ricerca, stampa ed
+* eliminazione degli studenti registrati nel sistema.
+*
+* Autore: Raffaele Severino
+* Data inizio: 02/04/2026
+* Data ultima modifica: 13/05/2026
+*/
 
-
-typedef struct studenteInterno* studente;
-//l'utente vede solo il puntatore alla struttura (per garantire l'information hiding)
-
-
-typedef struct tabellaStudentiInterna *tabellaStudenti;
-
-
-
-int creaTabella(int capacita);
-//creaTabella: alloca e inserisce una nuova tabella nel sistema
-
-
-
-void distruggiTabella();
-//distruggiTabella: rimuove la tabella nel sistema
-
-
-
-void stampaTabella();
-// stampaTabella: stampa studenti registrati
-
-
-int creaStudente(const char*nome, const char*cognome, const char* matricola, const char*corsoDiLaurea);
-//creaStudente: alloca e inserisce un nuovo studente nel sistema
-
-
-
-
-int eliminaStudente(const char*matricola);
-//eliminaStudente: rimuove lo studente con la matricola indicata
-
-
-
-
-studente cercaStudente(const char*matricola);
-//cercaStudente: cerca uno studente per matricola
-
-
-
-
-void stampaStudente(studente s);
-//stampaStudente: stampa a schermo i dati dello studente
+/*
+* Puntatore opaco alla struttura interna studente.
+*
+* L'implementazione concreta è nascosta nel file .c
+* per garantire l'information hiding.
+*/
+typedef struct studenteInterno *studente;
 
 
 
 
 /*
-funzioni utili per leggere i campi interni di una 
-prenotazione dall'esterno in modo controllato,
-senza mai accedere direttamente alla struct
+* Puntatore opaco alla struttura interna della tabella
+* contenente gli studenti registrati.
+*/
+typedef struct tabellaStudentiInterna *tabellaStudenti;
 
-rispettando quindi l'information hiding
+
+
+
+/*
+* Funzione: creaTabella
+* ---
+* Alloca e inizializza la tabella che conterrà
+* gli studenti del sistema.
+*
+* Parametri:
+* capacita: numero massimo iniziale di posizioni.
+*
+* Pre-condizione:
+* capacita deve essere maggiore di zero.
+*
+* Post-condizione:
+* Se l'operazione riesce, la tabella viene creata
+* e resa disponibile al modulo.
+*
+* Ritorna:
+* 0 se la creazione ha successo, valore negativo
+* in caso di errore.
+*/
+int creaTabella(int capacita);
+
+
+
+
+
+
+/*
+* Funzione: distruggiTabella
+* ---
+* Dealloca la tabella studenti e tutte le risorse
+* dinamiche ad essa associate.
+*
+* Parametri:
+* Nessuno.
+*
+* Pre-condizione:
+* Nessuna.
+*
+* Post-condizione:
+* La tabella non è più disponibile nel sistema.
+*/
+void distruggiTabella();
+
+
+
+
+
+/*
+* Funzione: stampaTabella
+* ---
+* Visualizza l'elenco degli studenti attualmente
+* registrati nella tabella.
+*
+* Parametri:
+* Nessuno.
+*
+* Pre-condizione:
+* La tabella deve essere stata creata.
+*
+* Post-condizione:
+* Output testuale prodotto su standard output.
+*/
+void stampaTabella();
+
+
+
+
+
+
+/*
+* Funzione: creaStudente
+* ---
+* Crea un nuovo studente e lo inserisce nella tabella.
+*
+* Parametri:
+* nome: nome dello studente.
+* cognome: cognome dello studente.
+* matricola: codice identificativo univoco.
+* corsoDiLaurea: corso di appartenenza.
+*
+* Pre-condizione:
+* Tutte le stringhe devono essere valide e non nulle.
+*
+* Post-condizione:
+* Se non esistono duplicati, lo studente viene
+* registrato nel sistema.
+*
+* Ritorna:
+* 0 se l'inserimento ha successo, valore negativo
+* in caso di errore.
+*/
+int creaStudente(const char *nome, const char *cognome, const char *matricola,const char *corsoDiLaurea);
+
+
+
+
+
+/*
+* Funzione: eliminaStudente
+* ---
+* Rimuove dalla tabella lo studente associato
+* alla matricola indicata.
+*
+* Parametri:
+* matricola: identificativo dello studente.
+*
+* Pre-condizione:
+* La matricola deve essere valida.
+*
+* Post-condizione:
+* Se presente, lo studente viene eliminato
+* dal sistema.
+*
+* Ritorna:
+* 0 se la rimozione ha successo, valore negativo
+* se lo studente non esiste o in caso di errore.
+*/
+int eliminaStudente(const char *matricola);
+
+
+
+
+
+
+/*
+* Funzione: cercaStudente
+* ---
+* Cerca uno studente tramite matricola.
+*
+* Parametri:
+* matricola: identificativo dello studente.
+*
+* Pre-condizione:
+* La matricola deve essere valida.
+*
+* Post-condizione:
+* Nessuna modifica ai dati interni.
+*
+* Ritorna:
+* Puntatore allo studente trovato, NULL se assente.
+*/
+studente cercaStudente(const char *matricola);
+
+
+
+
+
+
+/*
+* Funzione: stampaStudente
+* ---
+* Mostra a video i dati dello studente ricevuto.
+*
+* Parametri:
+* s: studente da visualizzare.
+*
+* Pre-condizione:
+* s deve riferirsi a uno studente valido.
+*
+* Post-condizione:
+* Output testuale prodotto su standard output.
+*/
+void stampaStudente(studente s);
+
+
+
+
+
+
+/*
+* Funzioni getter.
+* ---
+* Consentono la lettura controllata dei campi interni
+* senza accesso diretto alla struttura dati.
 */
 
 
-const char *getMatricola(studente s); //ritorna la matricola
-const char *getNome(studente s); //ritorna il nome
-const char*getCognome(studente s); //ritorna il cognome
-const char *getCorsoDiLaurea(studente s); //ritorna il corso di laurea
 
+/*
+* Funzione: getMatricola
+* ---
+* Restituisce la matricola dello studente.
+*
+* Parametri:
+* s: studente da consultare.
+*
+* Ritorna:
+* Puntatore alla stringa matricola, NULL se non valido.
+*/
+const char *getMatricola(studente s);
+
+
+
+
+
+/*
+* Funzione: getNome
+* ---
+* Restituisce il nome dello studente.
+*
+* Parametri:
+* s: studente da consultare.
+*
+* Ritorna:
+* Puntatore alla stringa nome, NULL se non valido.
+*/
+const char *getNome(studente s);
+
+
+
+
+
+
+/*
+* Funzione: getCognome
+* ---
+* Restituisce il cognome dello studente.
+*
+* Parametri:
+* s: studente da consultare.
+*
+* Ritorna:
+* Puntatore alla stringa cognome, NULL se non valido.
+*/
+const char *getCognome(studente s);
+
+
+
+
+
+
+
+/*
+* Funzione: getCorsoDiLaurea
+* ---
+* Restituisce il corso di laurea dello studente.
+*
+* Parametri:
+* s: studente da consultare.
+*
+* Ritorna:
+* Puntatore alla stringa del corso di laurea,
+* NULL se non valido.
+*/
+const char *getCorsoDiLaurea(studente s);
