@@ -164,8 +164,7 @@ int aggiungi_inCoda(const char *matricola, int fasciaOraria) {
     }
 
     if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n",
-               NUM_FASCE - 1);
+        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return -1;
     }
 
@@ -212,14 +211,12 @@ elementoCoda estraiDaCoda(int fasciaOraria) {
     elementoCodaInterno *nodo;
 
     if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n",
-               NUM_FASCE - 1);
+        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return NULL;
     }
 
     if (code[fasciaOraria].testa == NULL) {
-        printf("Errore: nessuno studente in attesa per la fascia %s.\n",
-               nomiFasce[fasciaOraria]);
+        printf("Errore: nessuno studente in attesa per la fascia %s.\n", nomiFasce[fasciaOraria]);
         return NULL;
     }
 
@@ -243,14 +240,12 @@ elementoCoda estraiDaCoda(int fasciaOraria) {
 */
 elementoCoda testa(int fasciaOraria) {
     if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n",
-               NUM_FASCE - 1);
+        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return NULL;
     }
 
     if (code[fasciaOraria].testa == NULL) {
-        printf("Errore: nessuno studente in attesa per la fascia %s.\n",
-               nomiFasce[fasciaOraria]);
+        printf("Errore: nessuno studente in attesa per la fascia %s.\n", nomiFasce[fasciaOraria]);
         return NULL;
     }
 
@@ -271,8 +266,7 @@ int rimuoviDaCoda(const char *matricola, int fasciaOraria) {
     }
 
     if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n",
-               NUM_FASCE - 1);
+        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return -1;
     }
 
@@ -302,8 +296,7 @@ int rimuoviDaCoda(const char *matricola, int fasciaOraria) {
         curr = curr->next;
     }
 
-    printf("Errore: studente non trovato in coda per la fascia %s.\n",
-           nomiFasce[fasciaOraria]);
+    printf("Errore: studente non trovato in coda per la fascia %s.\n",nomiFasce[fasciaOraria]);
 
     return -1;
 }
@@ -321,27 +314,22 @@ void visualizzaCoda(int fasciaOraria) {
     int posizione = 1;
 
     if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n",
-               NUM_FASCE - 1);
+        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return;
     }
 
     if (code[fasciaOraria].testa == NULL) {
-        printf("Nessuno studente in attesa per la fascia %s.\n",
-               nomiFasce[fasciaOraria]);
+        printf("Nessuno studente in attesa per la fascia %s.\n", nomiFasce[fasciaOraria]);
         return;
     }
 
     printf("=== Coda fascia %s (%d in attesa) ===\n",
-           nomiFasce[fasciaOraria],
-           code[fasciaOraria].dimensione);
+           nomiFasce[fasciaOraria], code[fasciaOraria].dimensione);
 
     curr = code[fasciaOraria].testa;
 
     while (curr) {
-        printf("%d. Matricola: %s\n",
-               posizione,
-               curr->matricola);
+        printf("%d. Matricola: %s\n", posizione, curr->matricola);
 
         posizione++;
         curr = curr->next;
@@ -374,8 +362,7 @@ void visualizzaTutteLeCoda() {
 */
 int codaVuota(int fasciaOraria) {
     if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n",
-               NUM_FASCE - 1);
+        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return -1;
     }
 
@@ -392,8 +379,7 @@ int codaVuota(int fasciaOraria) {
 */
 int dimensioneCoda(int fasciaOraria) {
     if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n",
-               NUM_FASCE - 1);
+        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return -1;
     }
 
