@@ -1,3 +1,22 @@
+
+/*
+ * File: prenotazioni.c
+ * ---
+ * Implementazione dell'ADT prenotazioni
+ * definito nel file prenotazioni.h.
+ *
+ * Il modulo gestisce una lista concatenata
+ * di prenotazioni identificate dalla combinazione
+ * univoca matricola + data + fasciaOraria.
+ *
+ * Le specifiche pubbliche sono descritte nel file
+ * header; qui vengono documentati i dettagli interni.
+ *
+ * Autore: Raffaele Severino
+ * Data inizio: 02/04/2026
+ * Data ultima modifica: 13/05/2026
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,8 +24,12 @@
 
 #define NUM_FASCE 5
 
-// STRUTTURE INTERNE
+// --- STRUTTURE INTERNE ---
 
+/*
+ * Nodo della lista concatenata.
+ * Ogni nodo rappresenta una singola prenotazione.
+ */
 typedef struct prenotazioneInterna {
     char *matricola; // puntatore alla stringa matricola
     char *data; // puntatore alla stringa data
@@ -15,67 +38,100 @@ typedef struct prenotazioneInterna {
     struct prenotazioneInterna *next; // puntatore al nodo successivo
 } prenotazioneInterna;
 
+
+
+/*
+ * Struttura della lista prenotazioni.
+ * Mantiene testa e contatore per gestione efficiente.
+ */
 typedef struct listaPrenotazioni {
     prenotazioneInterna *testa; // puntatore al primo nodo
     int dimensione; // contatore elementi presenti
 } listaPrenotazioni;
 
-static listaPrenotazioni *lista = NULL; // riferimento alla lista
+static listaPrenotazioni *lista = NULL; // Lista globale del modulo
 
-// FUNZIONI INTERNE
+// --- FUNZIONI INTERNE ---
 
-static char *duplicaStringa(const char *src) { // funzione per clonare stringhe
-    char *dst; // puntatore destinazione
+/*
+ * Funzione: duplicaStringa
+ * ---
+ * Crea una copia dinamica della stringa ricevuta.
+ *
+ * Viene usata per rendere autonoma la gestione
+ * delle stringhe memorizzate nei nodi della lista.
+ */
+static char *duplicaStringa(const char *src) {
+    char *dst;
 
     if (!src)
-        return NULL; // controllo sorgente nulla
+        return NULL;
 
-    dst = (char *)malloc(strlen(src) + 1); // allocazione memoria stringa
+    dst = (char *)malloc(strlen(src) + 1);
 
     if (!dst)
-        return NULL; // controllo fallimento allocazione
+        return NULL;
 
-    strcpy(dst, src); // copia della stringa
+    strcpy(dst, src);
 
-    return dst; // ritorno indirizzo nuova stringa
+    return dst;
 }
 
-static prenotazioneInterna *creaNodo(const char *matricola, const char *data, int fasciaOraria, int posto) { // alloca un nuovo nodo
-    prenotazioneInterna *nodo; // puntatore al nuovo nodo
 
-    nodo = (prenotazioneInterna *)malloc(sizeof(prenotazioneInterna)); // allocazione memoria nodo
+/*
+ * Funzione: creaNodo
+ * ---
+ * Alloca e inizializza un nuovo nodo della lista.
+ *
+ * Se una delle stringhe non viene allocata
+ * correttamente, libera tutto e ritorna NULL.
+ */
+static prenotazioneInterna *creaNodo(const char *matricola, const char *data, int fasciaOraria,int posto) {
+    prenotazioneInterna *nodo;
+
+    nodo = (prenotazioneInterna *)malloc(sizeof(prenotazioneInterna));
 
     if (!nodo)
-        return NULL; // controllo errore allocazione
+        return NULL;
 
-    nodo->matricola = duplicaStringa(matricola); // copia della matricola
-    nodo->data = duplicaStringa(data); // copia della data
-    nodo->fasciaOraria = fasciaOraria; // assegnazione fascia
-    nodo->posto = posto; // assegnazione posto
-    nodo->next = NULL; // inizializzazione puntatore next
+    nodo->matricola = duplicaStringa(matricola);
+    nodo->data = duplicaStringa(data);
+    nodo->fasciaOraria = fasciaOraria;
+    nodo->posto = posto;
+    nodo->next = NULL;
 
-    if (!nodo->matricola || !nodo->data) { // verifica successo duplicazione stringhe
+    if (!nodo->matricola || !nodo->data) {
 
-        free(nodo->matricola); // rilascio memoria matricola
-        free(nodo->data); // rilascio memoria data
-        free(nodo); // rilascio memoria nodo
-        return NULL; // ritorno fallimento
+        free(nodo->matricola);
+        free(nodo->data);
+        free(nodo);
+        return NULL;
     }
 
-    return nodo; // ritorno puntatore nodo pronto
+    return nodo;
 }
 
-static void liberaNodo(prenotazioneInterna *nodo) { // libera la memoria di un nodo
+
+/*
+ * Funzione: liberaNodo
+ * ---
+ * Dealloca completamente un nodo.
+ */
+static void liberaNodo(prenotazioneInterna *nodo) {
 
     if (!nodo)
-        return; // protezione nodo nullo
+        return;
 
-    free(nodo->matricola); // rilascio stringa matricola
-    free(nodo->data); // rilascio stringa data
-    free(nodo); // rilascio struttura
+    free(nodo->matricola);
+    free(nodo->data);
+    free(nodo);
 }
 
-static const char *nomiFasce[] = { // nomi descrittivi fasce orarie
+/*
+ * Nomi descrittivi delle fasce orarie.
+ * Utilizzati nei messaggi a schermo.
+ */
+static const char *nomiFasce[] = {
     "09:00 - 11:00",
     "11:00 - 13:00",
     "13:30 - 15:30",
@@ -83,229 +139,294 @@ static const char *nomiFasce[] = { // nomi descrittivi fasce orarie
     "17:30 - 19:30"
 };
 
-// CICLO DI VITA
+// --- CICLO DI VITA ---
 
-int creaListaPrenotazioni() { // inizializza la struttura lista
+/*
+ * Funzione: creaListaPrenotazioni
+ * ---
+ * Alloca e inizializza la struttura principale.
+ */
+int creaListaPrenotazioni() {
 
-    lista = (listaPrenotazioni *)malloc(sizeof(listaPrenotazioni)); // allocazione testata
+    lista = (listaPrenotazioni *)malloc(sizeof(listaPrenotazioni));
 
     if (!lista)
-        return -1; // controllo errore memoria
+        return -1;
 
-    lista->testa = NULL; // testa iniziale a null
-    lista->dimensione = 0; // dimensione iniziale a zero
+    lista->testa = NULL;
+    lista->dimensione = 0;
 
-    return 0; // successo
+    return 0;
 }
 
-void distruggiListaPrenotazioni() { // dealloca l'intera lista
-    prenotazioneInterna *curr, *next; // puntatori per scorrimento
+/*
+ * Funzione: distruggiListaPrenotazioni
+ * ---
+ * Libera tutta la memoria associata alla lista.
+ */
+void distruggiListaPrenotazioni() {
+    prenotazioneInterna *curr, *next;
 
     if (!lista)
-        return; // protezione lista non esistente
+        return;
 
-    curr = lista->testa; // inizio dalla testa
+    curr = lista->testa;
 
-    while (curr) { // ciclo fino alla fine
-        next = curr->next; // salvo il prossimo
-        liberaNodo(curr); // libero il corrente
-        curr = next; // passo al prossimo
+    while (curr) {
+        next = curr->next;
+        liberaNodo(curr);
+        curr = next;
     }
 
-    free(lista); // libero la testata
-    lista = NULL; // azzero puntatore globale
+    free(lista);
+    lista = NULL;
 }
 
-// FUNZIONI PER OPERAZIONI DI BASE
+// --- FUNZIONI PER OPERAZIONI DI BASE ---
 
-int creaPrenotazione(const char *matricola, const char *data, int fasciaOraria, int posto) { // inserimento nuova prenotazione
-    prenotazioneInterna *nodo, *curr; // puntatori di appoggio
+/*
+ * Funzione: creaPrenotazione
+ * ---
+ * Inserisce una nuova prenotazione in testa alla lista.
+ *
+ * L'inserimento in testa è O(1) ed è sufficiente
+ * perché la lista non richiede ordinamento.
+ */
+int creaPrenotazione(const char *matricola, const char *data, int fasciaOraria, int posto) {
 
-    if (!lista || !matricola || !data) { // controllo validita parametri
+    prenotazioneInterna *nodo, *curr;
+
+    if (!lista || !matricola || !data) {
         printf("Errore: parametri non validi.\n");
         return -1;
     }
 
-    if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) { // controllo range fascia
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
+    if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
+        printf("Errore: fascia oraria non valida.\n Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return -1;
     }
 
-    if (posto < 0) { // controllo validita posto
+    if (posto < 0) {
         printf("Errore: posto non valido.\n");
         return -1;
     }
 
-    curr = lista->testa; // inizio scansione per duplicati
+    /*
+     * La chiave è composta da tre campi: matricola,
+     * data e fasciaOraria. Tutti e tre devono coincidere
+     * per rilevare un duplicato.
+     */
+    curr = lista->testa;
 
-    while (curr) { // scansione lista
+    while (curr) {
         if (strcmp(curr->matricola, matricola) == 0 &&
             strcmp(curr->data, data) == 0 &&
-            curr->fasciaOraria == fasciaOraria) { // verifica tripla chiave
+            curr->fasciaOraria == fasciaOraria) {
             printf("Errore: prenotazione gia' esistente per questa fascia.\n");
             return -1;
         }
 
-        curr = curr->next; // nodo successivo
+        curr = curr->next;
     }
 
-    nodo = creaNodo(matricola, data, fasciaOraria, posto); // creazione fisica nodo
+    nodo = creaNodo(matricola, data, fasciaOraria, posto);
 
-    if (!nodo) { // verifica allocazione
+    if (!nodo) {
         printf("Errore: allocazione memoria fallita.\n");
         return -1;
     }
 
-    nodo->next = lista->testa; // inserimento in testa
-    lista->testa = nodo; // aggiornamento testa
-    lista->dimensione++; // incremento dimensione
+    nodo->next = lista->testa;
+    lista->testa = nodo;
+    lista->dimensione++;
 
-    return 0; // successo
+    return 0;
 }
 
-int annullaPrenotazione(const char *matricola, const char *data, int fasciaOraria) { // rimozione di una prenotazione
-    prenotazioneInterna *curr, *prev; // puntatori per ricerca
+/*
+ * Funzione: annullaPrenotazione
+ * ---
+ * Rimuove la prenotazione corrispondente alla
+ * combinazione matricola + data + fasciaOraria.
+ */
+int annullaPrenotazione(const char *matricola, const char *data, int fasciaOraria) {
+    prenotazioneInterna *curr, *prev;
 
-    if (!lista || !matricola || !data) { // controllo parametri
+    if (!lista || !matricola || !data) {
         printf("Errore: parametri non validi.\n");
         return -1;
     }
 
-    if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) { // controllo fascia
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
+    if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
+        printf("Errore: fascia oraria non valida.\n Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return -1;
     }
 
-    curr = lista->testa; // inizio ricerca
-    prev = NULL; // tracciamento precedente
+    curr = lista->testa;
+    prev = NULL;
 
-    while (curr) { // scansione lista
+    while (curr) {
         if (strcmp(curr->matricola, matricola) == 0 &&
             strcmp(curr->data, data) == 0 &&
-            curr->fasciaOraria == fasciaOraria) { // corrispondenza trovata
+            curr->fasciaOraria == fasciaOraria) {
 
+            // Se esiste un precedente collega al successivo
             if (prev)
-                prev->next = curr->next; // aggancio precedente a successivo
+                prev->next = curr->next;
             else
-                lista->testa = curr->next; // sposto testa al secondo
+                lista->testa = curr->next;
 
-            liberaNodo(curr); // deallocazione nodo rimosso
-            lista->dimensione--; // decremento contatore
+            liberaNodo(curr);
+            lista->dimensione--;
 
-            return 0; // successo
+            return 0;
         }
 
-        prev = curr; // aggiornamento precedente
-        curr = curr->next; // passaggio al successivo
+        prev = curr;
+        curr = curr->next;
     }
 
     printf("Errore: prenotazione non trovata.\n");
     return -1;
 }
 
-prenotazione cercaPrenotazione(const char *matricola, const char *data, int fasciaOraria) { // ricerca nodo specifico
-    prenotazioneInterna *curr; // puntatore scorrimento
+/*
+ * Funzione: cercaPrenotazione
+ * ---
+ * Ricerca lineare sulla lista tramite chiave composta.
+ */
+prenotazione cercaPrenotazione(const char *matricola, const char *data, int fasciaOraria) {
+    prenotazioneInterna *curr;
 
-    if (!lista || !matricola || !data) { // controllo input
+    if (!lista || !matricola || !data) {
         printf("Errore: parametri non validi.\n");
         return NULL;
     }
 
-    if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) { // controllo fascia
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
+    if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
+        printf("Errore: fascia oraria non valida.\n Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return NULL;
     }
 
-    curr = lista->testa; // inizio ricerca lineare
+    curr = lista->testa;
 
-    while (curr) { // scansione nodi
+    while (curr) {
         if (strcmp(curr->matricola, matricola) == 0 &&
             strcmp(curr->data, data) == 0 &&
             curr->fasciaOraria == fasciaOraria)
-            return curr; // trovato: ritorno puntatore
+            return curr;
 
-        curr = curr->next; // prossimo nodo
+        curr = curr->next;
     }
 
-    return NULL; // non trovato
+    return NULL;
 }
 
-// VISUALIZZAZIONI
+// --- VISUALIZZAZIONI ---
 
-void visualizzaPrenotazioni() { // stampa tutte le prenotazioni attive
-    prenotazioneInterna *curr; // puntatore scorrimento
+/*
+ * Funzione: visualizzaPrenotazioni
+ * ---
+ * Mostra a video tutte le prenotazioni presenti.
+ */
+void visualizzaPrenotazioni() {
+    prenotazioneInterna *curr;
 
-    if (!lista || !lista->testa) { // controllo lista vuota
+    if (!lista || !lista->testa) {
         printf("Nessuna prenotazione attiva.\n");
         return;
     }
 
-    printf("=== Prenotazioni attive (%d) ===\n", lista->dimensione); // testata con conteggio
+    printf("=== Prenotazioni attive (%d) ===\n", lista->dimensione);
 
-    curr = lista->testa; // inizio stampa
+    curr = lista->testa;
 
-    while (curr) { // ciclo su tutti i nodi
+    while (curr) {
         printf("Matricola: %s | Data: %s | Fascia: %s | Posto: %d\n",
-               curr->matricola, curr->data, nomiFasce[curr->fasciaOraria], curr->posto);
+                curr->matricola, curr->data, nomiFasce[curr->fasciaOraria], curr->posto);
 
-        curr = curr->next; // nodo successivo
+        curr = curr->next;
     }
 }
 
-void visualizzaPrenotazioniPerFascia(int fasciaOraria) { // stampa filtrata per fascia
-    prenotazioneInterna *curr; // puntatore scorrimento
-    int trovati = 0; // contatore locale
+/*
+ * Funzione: visualizzaPrenotazioniPerFascia
+ * ---
+ * Mostra a video le prenotazioni della fascia indicata.
+ */
+void visualizzaPrenotazioniPerFascia(int fasciaOraria) {
+    prenotazioneInterna *curr;
+    int trovati = 0;
 
-    if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) { // controllo validita fascia
-        printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
+    if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
+        printf("Errore: fascia oraria non valida.\n Inserire un valore tra 0 e %d.\n", NUM_FASCE - 1);
         return;
     }
 
-    printf("=== Prenotazioni fascia %s ===\n", nomiFasce[fasciaOraria]); // testata fascia
+    printf("=== Prenotazioni fascia %s ===\n", nomiFasce[fasciaOraria]);
 
-    curr = lista->testa; // inizio scansione filtrata
+    curr = lista->testa;
 
-    while (curr) { // ciclo nodi
-        if (curr->fasciaOraria == fasciaOraria) { // se fascia coincide
-            printf("Matricola: %s | Data: %s | Posto: %d\n",
-                   curr->matricola, curr->data, curr->posto);
+    while (curr) {
+        if (curr->fasciaOraria == fasciaOraria) {
+            printf("Matricola: %s | Data: %s | Posto: %d\n", curr->matricola, curr->data, curr->posto);
 
-            trovati++; // incremento trovati
+            trovati++;
         }
 
-        curr = curr->next; // prossimo nodo
+        curr = curr->next;
     }
 
     if (!trovati)
         printf("Nessuna prenotazione per questa fascia.\n");
 }
 
-// GETTER
+// --- GETTER ---
 
-const char *getMatricolaPrenotazione(prenotazione p) { // accesso sicuro alla matricola
+/*
+ * Funzione: getMatricolaPrenotazione
+ * ---
+ * Restituisce la matricola della prenotazione.
+ */
+const char *getMatricolaPrenotazione(prenotazione p) {
     if (p != NULL)
-        return p->matricola; // ritorno dato
+        return p->matricola;
     else
-        return NULL; // ritorno nullo
+        return NULL;
 }
 
-const char *getDataPrenotazione(prenotazione p) { // accesso sicuro alla data
+/*
+ * Funzione: getDataPrenotazione
+ * ---
+ * Restituisce la data della prenotazione.
+ */
+const char *getDataPrenotazione(prenotazione p) {
     if (p != NULL)
-        return p->data; // ritorno dato
+        return p->data;
     else
-        return NULL; // ritorno nullo
+        return NULL;
 }
 
-int getFasciaOraria(prenotazione p) { // accesso sicuro alla fascia oraria
+/*
+ * Funzione: getFasciaOraria
+ * ---
+ * Restituisce la fascia oraria della prenotazione.
+ */
+int getFasciaOraria(prenotazione p) {
     if (p != NULL)
-        return p->fasciaOraria; // ritorno dato
+        return p->fasciaOraria;
     else
-        return -1; // ritorno codice errore
+        return -1;
 }
 
-int getPostoAssegnato(prenotazione p) { // accesso sicuro al posto assegnato
+/*
+ * Funzione: getPostoAssegnato
+ * ---
+ * Restituisce il posto assegnato alla prenotazione.
+ */
+int getPostoAssegnato(prenotazione p) {
     if (p != NULL)
-        return p->posto; // ritorno dato
+        return p->posto;
     else
-        return -1; // ritorno codice errore
+        return -1;
 }
