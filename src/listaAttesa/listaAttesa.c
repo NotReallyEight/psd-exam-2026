@@ -145,14 +145,14 @@ static const char *nomiFasce[] = {
 // --- OPERAZIONI PRINCIPALI ---
 
 /*
-* Funzione: enqueue
+* Funzione: aggiungi_inCoda
 * ---
 * Inserisce uno studente in fondo alla coda selezionata.
 *
 * Prima dell'inserimento viene controllata l'assenza
 * di duplicati nella stessa fascia.
 */
-int enqueue(const char *matricola, int fasciaOraria) {
+int aggiungi_inCoda(const char *matricola, int fasciaOraria) {
     elementoCodaInterno *nodo, *curr;
 
     if (!inizializzato)
@@ -202,13 +202,13 @@ int enqueue(const char *matricola, int fasciaOraria) {
 }
 
 /*
-* Funzione: dequeue
+* Funzione: estraiDaCoda
 * ---
 * Rimuove e restituisce il primo elemento della coda.
 *
 * Il nodo restituito dovrà essere liberato dal chiamante.
 */
-elementoCoda dequeue(int fasciaOraria) {
+elementoCoda estraiDaCoda(int fasciaOraria) {
     elementoCodaInterno *nodo;
 
     if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
@@ -237,11 +237,11 @@ elementoCoda dequeue(int fasciaOraria) {
 }
 
 /*
-* Funzione: top
+* Funzione: testa
 * ---
 * Restituisce il primo elemento senza rimuoverlo.
 */
-elementoCoda top(int fasciaOraria) {
+elementoCoda testa(int fasciaOraria) {
     if (fasciaOraria < 0 || fasciaOraria >= NUM_FASCE) {
         printf("Errore: fascia oraria non valida. Inserire un valore tra 0 e %d.\n",
                NUM_FASCE - 1);

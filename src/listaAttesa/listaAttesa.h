@@ -25,7 +25,7 @@ typedef struct elementoCodaInterno *elementoCoda;
 
 
 /*
-* Funzione: enqueue
+* Funzione: aggiungi_inCoda
 * ---
 * Inserisce un nuovo studente nella coda relativa a una specifica fascia.
 *
@@ -38,15 +38,15 @@ typedef struct elementoCodaInterno *elementoCoda;
 * La fasciaOraria deve rientrare nel range definito.
 *
 * Post-condizione:
-* Ritorna 1 se l'inserimento è avvenuto con successo, 0 altrimenti.
+* Ritorna: 0 se l'inserimento è avvenuto con successo, -1 altrimenti.
 */
-int enqueue(const char *matricola, int fasciaOraria);
+int aggiungi_inCoda(const char *matricola, int fasciaOraria);
 
 
 
 
 /*
-* Funzione: dequeue
+* Funzione: estraiDaCoda
 * ---
 * Estrae dalla coda il primo studente in attesa per la fascia indicata.
 *
@@ -60,14 +60,14 @@ int enqueue(const char *matricola, int fasciaOraria);
 * Ritorna il puntatore all'elemento rimosso. La gestione della memoria 
 * dell'elemento restituito passa al chiamante.
 */
-elementoCoda dequeue(int fasciaOraria);
+elementoCoda estraiDaCoda(int fasciaOraria);
 
 
 
 
 
 /*
-* Funzione: top
+* Funzione: testa
 * ---
 * Permette di consultare il primo studente della coda senza rimuoverlo.
 *
@@ -75,12 +75,12 @@ elementoCoda dequeue(int fasciaOraria);
 * fasciaOraria: indice della fascia da consultare.
 *
 * Pre-condizione:
-* Nessuna.
+* fasciaOraria sia nel range valido.
 *
 * Post-condizione:
 * Ritorna il puntatore al primo elemento se presente, NULL altrimenti.
 */
-elementoCoda top(int fasciaOraria);
+elementoCoda testa(int fasciaOraria);
 
 
 
@@ -100,7 +100,7 @@ elementoCoda top(int fasciaOraria);
 * La stringa matricola deve essere inizializzata.
 *
 * Post-condizione:
-* Ritorna 1 se l'elemento è stato trovato e rimosso, 0 se non presente.
+* Ritorna: 0 se l'inserimento è avvenuto con successo, -1 altrimenti.
 */
 int rimuoviDaCoda(const char *matricola, int fasciaOraria);
 
@@ -120,7 +120,8 @@ int rimuoviDaCoda(const char *matricola, int fasciaOraria);
 * Nessuna.
 *
 * Post-condizione:
-* Output testuale prodotto su standard output.
+* Stampa a schermo la lista degli studenti in attesa
+* con la loro posizione, o un messaggio se la coda è vuota.
 */
 void visualizzaCoda(int fasciaOraria);
 
