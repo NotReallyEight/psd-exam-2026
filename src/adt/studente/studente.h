@@ -16,7 +16,7 @@
 
 
 /*
-* Puntatore opaco alla struttura interna studente.
+* Puntatore alla struttura interna studente.
 *
 * L'implementazione concreta è nascosta nel file .c
 * per garantire l'information hiding.
@@ -25,12 +25,6 @@ typedef struct studenteInterno *studente;
 
 
 
-
-/*
-* Puntatore opaco alla struttura interna della tabella
-* contenente gli studenti registrati.
-*/
-typedef struct tabellaStudentiInterna *tabellaStudenti;
 
 
 
@@ -96,7 +90,8 @@ void distruggiTabella();
 * La tabella deve essere stata creata.
 *
 * Post-condizione:
-* Output testuale prodotto su standard output.
+* I dati dello studente vengono stampati a schermo.
+* Se s è NULL viene stampato un messaggio di errore.
 */
 void stampaTabella();
 
@@ -196,7 +191,8 @@ studente cercaStudente(const char *matricola);
 * s deve riferirsi a uno studente valido.
 *
 * Post-condizione:
-* Output testuale prodotto su standard output.
+* I dati dello studente vengono stampati a schermo.
+* Se s è NULL viene stampato un messaggio di errore.
 */
 void stampaStudente(studente s);
 
