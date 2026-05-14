@@ -12,6 +12,9 @@
 * Data ultima modifica: 13/05/2026
 */
 
+
+
+
 /*
 * Puntatore opaco alla struttura interna studente.
 *

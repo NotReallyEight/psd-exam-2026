@@ -1,338 +1,465 @@
+/*
+* File: studente.c
+* ---
+* Implementazione dell'ADT studente definito nel file studente.h.
+*
+* Il modulo gestisce un archivio studenti tramite tabella hash
+* con scansione lineare delle collisioni.
+*
+* Le specifiche pubbliche sono descritte nel file header;
+* qui vengono documentati i dettagli interni.
+*
+* Autore: Raffaele Severino
+* Data inizio: 02/04/2026
+* Data ultima modifica: 13/05/2026
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "studente.h"
 
-// STRUTTURE INTERNE
+// --- STRUTTURE INTERNE ---
 
+/*
+* Record interno di uno studente.
+*/
 typedef struct studenteInterno {
-    char *nome; // stringa per allocazione dinamica del nome
-    char *cognome; // stringa per allocazione dinamica del cognome
-    char *matricola; // chiave univoca per identificazione e hashing
-    char *corsoDiLaurea; // stringa per il corso di studi dello studente
-    int occupato; // stato cella: 1 attivo, 0 mai usata, -1 rimosso (tombstone)
+    char *nome; // Nome dello studente
+    char *cognome; // Cognome dello studente
+    char *matricola; // Identificativo univoco
+    char *corsoDiLaurea; // Corso frequentato
+    int occupato; // 1 attivo, 0 libero, -1 eliminato
 } studenteInterno;
 
+/*
+* Struttura della tabella hash.
+*/
 typedef struct tabellaStudentiInterna {
-    studenteInterno *celle; // puntatore all'array di record studenteInterno
-    int capacita; // numero totale di slot fisici allocati nell'array
-    int dimensione; // conteggio effettivo degli studenti inseriti e attivi
+    studenteInterno *celle; // Array delle celle
+    int capacita; // Numero slot disponibili
+    int dimensione; // Numero studenti presenti
 } tabellaStudentiInterna;
 
-static tabellaStudentiInterna *tabella = NULL; // riferimento statico alla tabella
+static tabellaStudentiInterna *tabella = NULL; // Tabella globale del modulo
 
-// FUNZIONI INTERNE
+// --- FUNZIONI INTERNE ---
 
-static unsigned int hash(const char *matricola, int capacita) { // funzione hash djb2
-    unsigned int h = 5381; // valore standard iniziale per la distribuzione
+/*
+* Funzione: hash
+* ---
+* Calcola l'indice iniziale associato a una matricola.
+*
+* Usa djb2, funzione semplice e adatta a chiavi testuali.
+*/
+static unsigned int hash(const char *matricola, int capacita) {
+    unsigned int h = 5381;
 
-    while (*matricola) // ciclo finche non si raggiunge il terminatore della stringa
-        h = ((h << 5) + h) + (unsigned char)(*matricola++); // algoritmo: h * 33 + codice ascii carattere
+    while (*matricola)
+        h = ((h << 5) + h) + (unsigned char)(*matricola++);
 
-    return h % (unsigned int)capacita; // mapping dell'hash nel range degli indici della tabella
+    return h % (unsigned int)capacita;
 }
 
-static char *duplicaStringa(const char *src) { // funzione per duplicare stringhe in memoria
-    char *dst; // puntatore per la nuova stringa destinazione
+/*
+* Funzione: duplicaStringa
+* ---
+* Alloca una copia indipendente della stringa ricevuta.
+*/
+static char *duplicaStringa(const char *src) {
+    char *dst;
 
     if (!src)
-        return NULL; // controllo sorgente nulla
+        return NULL;
 
-    dst = (char *)malloc(strlen(src) + 1); // allocazione memoria: lunghezza stringa piu terminatore \0
+    dst = (char *)malloc(strlen(src) + 1);
 
     if (!dst)
-        return NULL; // controllo fallimento allocazione
+        return NULL;
 
-    strcpy(dst, src); // copia fisica dei caratteri dalla sorgente alla destinazione
+    strcpy(dst, src);
 
-    return dst; // ritorna l'indirizzo della nuova stringa allocata
+    return dst;
 }
 
-static int trovaPosizione(const char *matricola) { // cerca l'indice di una matricola esistente
-    unsigned int idx = hash(matricola, tabella->capacita); // calcolo indice di partenza tramite hash
-    int i; // contatore per scansione lineare delle collisioni
+/*
+* Funzione: trovaPosizione
+* ---
+* Cerca una matricola già presente nella tabella.
+*
+* La scansione continua finché non trova la chiave
+* oppure uno slot mai usato.
+*/
+static int trovaPosizione(const char *matricola) {
+    unsigned int idx = hash(matricola, tabella->capacita);
+    int i;
 
-    for (i = 0; i < tabella->capacita; i++) { // ciclo di ricerca su tutta la capacita massima
-        unsigned int pos = (idx + i) % (unsigned int)tabella->capacita; // calcolo posizione con scansione lineare
+    for (i = 0; i < tabella->capacita; i++) {
+        unsigned int pos = (idx + i) % (unsigned int)tabella->capacita;
 
+        // Slot mai usato: la chiave non può trovarsi oltre
         if (tabella->celle[pos].occupato == 0)
-            return -1; // cella vuota: lo studente non esiste
+            return -1;
 
         if (tabella->celle[pos].occupato == 1 &&
             strcmp(tabella->celle[pos].matricola, matricola) == 0)
-            return (int)pos; // matricola trovata: ritorna indice
+            return (int)pos;
     }
 
-    return -1; // studente non presente dopo scansione completa
+    return -1;
 }
 
-static int trovaSlotInserimento(const char *matricola) { // cerca posto per nuovo inserimento
-    unsigned int idx = hash(matricola, tabella->capacita); // indice di partenza calcolato sulla chiave
-    int primoTombstone = -1, i; // tracciamento primo slot eliminato e contatore
+/*
+* Funzione: trovaSlotInserimento
+* ---
+* Cerca la posizione migliore per un nuovo inserimento.
+*
+* Se incontra slot eliminati li memorizza, così potranno
+* essere riutilizzati senza interrompere la ricerca.
+*/
+static int trovaSlotInserimento(const char *matricola) {
+    unsigned int idx = hash(matricola, tabella->capacita);
+    int primoTombstone = -1;
+    int i;
 
-    for (i = 0; i < tabella->capacita; i++) { // scansione lineare per risoluzione collisioni
-        unsigned int pos = (idx + i) % (unsigned int)tabella->capacita; // calcolo indice successivo
+    for (i = 0; i < tabella->capacita; i++) {
+        unsigned int pos = (idx + i) % (unsigned int)tabella->capacita;
 
-        if (tabella->celle[pos].occupato == 0) { // cella mai usata
+        /*
+        * Slot mai usato:
+        * se esiste un tombstone conviene riutilizzarlo,
+        * altrimenti si usa questa cella libera.
+        */
+        if (tabella->celle[pos].occupato == 0) {
             if (primoTombstone != -1)
-                return primoTombstone; // usa il tombstone trovato prima
+                return primoTombstone;
             else
-                return (int)pos; // usa la cella libera
+                return (int)pos;
         }
 
-        if (tabella->celle[pos].occupato == -1 && primoTombstone == -1)
-            primoTombstone = (int)pos; // salva posizione tombstone per riutilizzo
+        /*
+        * Il primo tombstone viene salvato perché rappresenta
+        * il miglior slot riutilizzabile trovato finora.
+        */
+        if (tabella->celle[pos].occupato == -1 &&
+            primoTombstone == -1)
+            primoTombstone = (int)pos;
 
+        // Blocca inserimenti con matricola duplicata
         if (tabella->celle[pos].occupato == 1 &&
             strcmp(tabella->celle[pos].matricola, matricola) == 0)
-            return -1; // matricola gia presente: impedisce duplicati
+            return -1;
     }
 
-    return primoTombstone; // tombstone disponibile se tabella satura di cancellati
+    return primoTombstone;
 }
 
-static int rehash() { // espande la tabella quando piena
-    int nuovaCapacita = tabella->capacita + 20; // nuova dimensione aumentata di 20 slot
-    int i; // indice per iterare sulla vecchia tabella
+/*
+* Funzione: rehash
+* ---
+* Espande la tabella quando piena.
+*
+* Gli elementi attivi vengono ricollocati usando
+* la nuova capacità per migliorare distribuzione e spazio.
+*/
+static int rehash() {
+    int nuovaCapacita = tabella->capacita + 20;
+    int i;
 
-    studenteInterno *nuoveCelle = (studenteInterno *)calloc(nuovaCapacita, sizeof(studenteInterno)); // nuova memoria azzerata
+    studenteInterno *nuoveCelle = (studenteInterno *)calloc(nuovaCapacita, sizeof(studenteInterno));
 
     if (!nuoveCelle)
-        return -1; // fallimento allocazione nuova area di memoria
+        return -1;
 
-    for (i = 0; i < tabella->capacita; i++) { // scansione di ogni cella della tabella originale
+    for (i = 0; i < tabella->capacita; i++) {
 
-        if (tabella->celle[i].occupato == 1) { // processa solo gli elementi attivi
-            unsigned int idx = hash(tabella->celle[i].matricola, nuovaCapacita); // nuovo hash con nuova capacita
-            int j; // indice per posizionamento nella nuova tabella
+        // Solo gli elementi validi devono essere trasferiti
+        if (tabella->celle[i].occupato == 1) {
+            unsigned int idx = hash(tabella->celle[i].matricola, nuovaCapacita);
+            int j;
 
-            for (j = 0; j < nuovaCapacita; j++) { // ricerca nuovo slot libero per il trasferimento
-                unsigned int pos = (idx + j) % (unsigned int)nuovaCapacita; // linear probing sulla nuova tabella
+            for (j = 0; j < nuovaCapacita; j++) {
+                unsigned int pos = (idx + j) % (unsigned int)nuovaCapacita;
 
-                if (nuoveCelle[pos].occupato == 0) { // slot libero trovato nella nuova tabella
-                    nuoveCelle[pos].matricola = tabella->celle[i].matricola; // sposta puntatore matricola
-                    nuoveCelle[pos].nome = tabella->celle[i].nome; // sposta puntatore nome
-                    nuoveCelle[pos].cognome = tabella->celle[i].cognome; // sposta puntatore cognome
-                    nuoveCelle[pos].corsoDiLaurea = tabella->celle[i].corsoDiLaurea; // sposta puntatore corso
-                    nuoveCelle[pos].occupato = 1; // marca cella nella nuova tabella come attiva
-                    break; // passa al prossimo studente da trasferire
+                if (nuoveCelle[pos].occupato == 0) {
+
+                    /*
+                    * Si spostano i puntatori esistenti senza duplicare
+                    * le stringhe, evitando copie inutili di memoria.
+                    */
+                    nuoveCelle[pos].matricola = tabella->celle[i].matricola;
+                    nuoveCelle[pos].nome = tabella->celle[i].nome;
+                    nuoveCelle[pos].cognome = tabella->celle[i].cognome;
+                    nuoveCelle[pos].corsoDiLaurea = tabella->celle[i].corsoDiLaurea;
+
+                    nuoveCelle[pos].occupato = 1;
+                    break;
                 }
             }
         }
     }
 
-    free(tabella->celle); // libera array celle vecchio (non le stringhe, gia spostate)
-    tabella->celle = nuoveCelle; // collega nuovo array alla struttura principale
-    tabella->capacita = nuovaCapacita; // aggiorna valore capacita massima
+    free(tabella->celle);
+    tabella->celle = nuoveCelle;
+    tabella->capacita = nuovaCapacita;
 
-    return 0; // rehashing completato con successo
+    return 0;
 }
 
-// CICLO DI VITA
+// --- CICLO DI VITA ---
 
-int creaTabella(int capacita) { // inizializzazione della struttura dati
+/*
+* Funzione: creaTabella
+* ---
+* Alloca e inizializza la struttura principale.
+*/
+int creaTabella(int capacita) {
 
-    if (capacita <= 0) { // controllo validita parametro di input
+    if (capacita <= 0) {
         printf("Errore: capacita non valida.\n");
         return -1;
     }
 
-    if (tabella != NULL) { // controllo doppia inizializzazione
+    if (tabella != NULL) {
         printf("Errore: tabella gia inizializzata.\n");
         return -1;
     }
 
-    tabella = (tabellaStudentiInterna *)malloc(sizeof(tabellaStudentiInterna)); // alloca memoria header tabella
+    tabella = (tabellaStudentiInterna *)malloc(sizeof(tabellaStudentiInterna));
 
     if (!tabella)
-        return -1; // controllo errore malloc header
+        return -1;
 
-    tabella->celle = (studenteInterno *)calloc(capacita, sizeof(studenteInterno)); // alloca array celle e azzera byte
+    tabella->celle = (studenteInterno *)calloc(capacita, sizeof(studenteInterno));
 
     if (!tabella->celle) {
         free(tabella);
         tabella = NULL;
-        return -1; // controllo errore calloc celle
+        return -1;
     }
 
-    tabella->capacita = capacita; // imposta capacita iniziale fornita
-    tabella->dimensione = 0; // inizializza contatore elementi a zero
+    tabella->capacita = capacita;
+    tabella->dimensione = 0;
 
-    return 0; // tabella creata con successo
+    return 0;
 }
 
-void distruggiTabella() { // deallocazione completa della memoria
-    int i; // indice per iterare tra le celle
+/*
+* Funzione: distruggiTabella
+* ---
+* Libera tutta la memoria associata alla tabella.
+*/
+void distruggiTabella() {
+    int i;
 
     if (!tabella)
-        return; // tabella non esistente: nessuna operazione
+        return;
 
-    for (i = 0; i < tabella->capacita; i++) { // ciclo per liberare ogni stringa allocata
+    for (i = 0; i < tabella->capacita; i++) {
 
-        if (tabella->celle[i].occupato == 1) { // solo celle attive contengono stringhe da liberare
-            free(tabella->celle[i].matricola); // dealloca stringa matricola
-            free(tabella->celle[i].nome); // dealloca stringa nome
-            free(tabella->celle[i].cognome); // dealloca stringa cognome
-            free(tabella->celle[i].corsoDiLaurea); // dealloca stringa corso di laurea
+        // Solo celle attive contengono stringhe allocate
+        if (tabella->celle[i].occupato == 1) {
+            free(tabella->celle[i].matricola);
+            free(tabella->celle[i].nome);
+            free(tabella->celle[i].cognome);
+            free(tabella->celle[i].corsoDiLaurea);
         }
     }
 
-    free(tabella->celle); // libera array di strutture studenteInterno
-    free(tabella); // libera struttura header della tabella
-    tabella = NULL; // azzera puntatore globale per sicurezza
+    free(tabella->celle);
+    free(tabella);
+    tabella = NULL;
 }
 
-// FUNZIONI PER OPERAZIONI DI BASE
+// --- OPERAZIONI PRINCIPALI ---
 
-int creaStudente(const char *nome, const char *cognome,
-                 const char *matricola, const char *corsoDiLaurea) { // inserimento nuovo studente
-    int slot; // variabile per contenere l'indice di destinazione
+/*
+* Funzione: creaStudente
+* ---
+* Inserisce un nuovo studente nella tabella.
+*/
+int creaStudente(const char *nome, const char *cognome, const char *matricola, const char *corsoDiLaurea) {
+    int slot;
 
-    if (!tabella || !nome || !cognome || !matricola || !corsoDiLaurea) { // validazione parametri
+    if (!tabella || !nome || !cognome || !matricola || !corsoDiLaurea) {
         printf("Errore: parametri non validi.\n");
         return -1;
     }
 
-    if (tabella->dimensione == tabella->capacita) // tabella fisicamente piena
+    // Se piena viene espansa prima dell'inserimento
+    if (tabella->dimensione == tabella->capacita)
         if (rehash() == -1)
-            return -1; // espansione fallita
+            return -1;
 
-    slot = trovaSlotInserimento(matricola); // cerca posizione ottimale (libera o tombstone)
+    slot = trovaSlotInserimento(matricola);
 
-    if (slot == -1) { // matricola gia presente
+    if (slot == -1) {
         printf("Errore: matricola gia esistente.\n");
         return -1;
     }
 
-    tabella->celle[slot].matricola = duplicaStringa(matricola); // alloca e copia matricola
-    tabella->celle[slot].nome = duplicaStringa(nome); // alloca e copia nome
-    tabella->celle[slot].cognome = duplicaStringa(cognome); // alloca e copia cognome
-    tabella->celle[slot].corsoDiLaurea = duplicaStringa(corsoDiLaurea); // alloca e copia corso
+    /*
+    * Si copiano i dati testuali in memoria autonoma,
+    * così la struttura non dipende dalle stringhe esterne.
+    */
+    tabella->celle[slot].matricola = duplicaStringa(matricola);
+    tabella->celle[slot].nome = duplicaStringa(nome);
+    tabella->celle[slot].cognome = duplicaStringa(cognome);
+    tabella->celle[slot].corsoDiLaurea = duplicaStringa(corsoDiLaurea);
 
+    /*
+    * Se una qualunque allocazione fallisce,
+    * vengono liberate quelle già riuscite.
+    */
     if (!tabella->celle[slot].matricola ||
         !tabella->celle[slot].nome ||
         !tabella->celle[slot].cognome ||
-        !tabella->celle[slot].corsoDiLaurea) { // controllo fallimento allocazione stringhe
+        !tabella->celle[slot].corsoDiLaurea) {
 
-        free(tabella->celle[slot].matricola); // cleanup parziale matricola
-        free(tabella->celle[slot].nome); // cleanup parziale nome
-        free(tabella->celle[slot].cognome); // cleanup parziale cognome
-        free(tabella->celle[slot].corsoDiLaurea); // cleanup parziale corso
-        return -1; // errore di allocazione
+        free(tabella->celle[slot].matricola);
+        free(tabella->celle[slot].nome);
+        free(tabella->celle[slot].cognome);
+        free(tabella->celle[slot].corsoDiLaurea);
+
+        return -1;
     }
 
-    tabella->celle[slot].occupato = 1; // marca cella come attiva
-    tabella->dimensione++; // incrementa contatore studenti presenti
+    tabella->celle[slot].occupato = 1;
+    tabella->dimensione++;
 
-    return 0; // studente inserito con successo
+    return 0;
 }
 
-int eliminaStudente(const char *matricola) { // rimozione logica e fisica di uno studente
-    int pos; // indice della posizione dello studente da rimuovere
+/*
+* Funzione: eliminaStudente
+* ---
+* Elimina lo studente indicato dalla matricola.
+*/
+int eliminaStudente(const char *matricola) {
+    int pos;
 
-    if (!tabella || !matricola) { // validazione input
+    if (!tabella || !matricola) {
         printf("Errore: parametri non validi.\n");
         return -1;
     }
 
-    pos = trovaPosizione(matricola); // cerca indice associato alla matricola
+    pos = trovaPosizione(matricola);
 
-    if (pos == -1) { // studente non trovato
+    if (pos == -1) {
         printf("Errore: studente non trovato.\n");
         return -1;
     }
 
-    free(tabella->celle[pos].matricola); // libera stringa matricola
-    free(tabella->celle[pos].nome); // libera stringa nome
-    free(tabella->celle[pos].cognome); // libera stringa cognome
-    free(tabella->celle[pos].corsoDiLaurea); // libera stringa corso di laurea
+    free(tabella->celle[pos].matricola);
+    free(tabella->celle[pos].nome);
+    free(tabella->celle[pos].cognome);
+    free(tabella->celle[pos].corsoDiLaurea);
 
-    tabella->celle[pos].matricola = NULL; // azzera puntatore per evitare dangling pointer
-    tabella->celle[pos].nome = NULL; // azzera puntatore nome
-    tabella->celle[pos].cognome = NULL; // azzera puntatore cognome
-    tabella->celle[pos].corsoDiLaurea = NULL; // azzera puntatore corso
-    tabella->celle[pos].occupato = -1; // marca come tombstone per preservare linear probing
+    /*
+    * Lo slot non viene marcato libero ma tombstone,
+    * così la ricerca hash futura resta corretta.
+    */
+    tabella->celle[pos].matricola = NULL;
+    tabella->celle[pos].nome = NULL;
+    tabella->celle[pos].cognome = NULL;
+    tabella->celle[pos].corsoDiLaurea = NULL;
+    tabella->celle[pos].occupato = -1;
 
-    tabella->dimensione--; // decrementa contatore studenti attivi
+    tabella->dimensione--;
 
-    return 0; // eliminazione completata
+    return 0;
 }
 
-studente cercaStudente(const char *matricola) { // ricerca pubblica di uno studente
-    int pos; // variabile indice
+/*
+* Funzione: cercaStudente
+* ---
+* Cerca e restituisce lo studente richiesto.
+*/
+studente cercaStudente(const char *matricola) {
+    int pos;
 
     if (!tabella || !matricola)
-        return NULL; // validazione input
+        return NULL;
 
-    pos = trovaPosizione(matricola); // esegue scansione hash e lineare
+    pos = trovaPosizione(matricola);
 
     if (pos == -1)
-        return NULL; // studente non trovato
+        return NULL;
 
-    return &tabella->celle[pos]; // ritorna indirizzo cella trovata
+    return &tabella->celle[pos];
 }
 
-// VISUALIZZAZIONI
+// --- VISUALIZZAZIONE ---
 
-void stampaStudente(studente s) { // visualizza dati di uno studente
+/*
+* Funzione: stampaStudente
+* ---
+* Mostra a video i dati di uno studente.
+*/
+void stampaStudente(studente s) {
 
-    if (!s) { // protezione contro puntatori nulli
+    if (!s) {
         printf("Errore: studente non valido.\n");
         return;
     }
 
-    printf("Matricola: %s\n", s->matricola); // stampa matricola
-    printf("Nome: %s\n", s->nome); // stampa nome
-    printf("Cognome: %s\n", s->cognome); // stampa cognome
-    printf("Corso: %s\n", s->corsoDiLaurea); // stampa corso di laurea
+    printf("Matricola: %s\n", s->matricola);
+    printf("Nome: %s\n", s->nome);
+    printf("Cognome: %s\n", s->cognome);
+    printf("Corso: %s\n", s->corsoDiLaurea);
 }
 
-void stampaTabella() { // visualizza intero database studenti
-    int i; // indice iterazione
+/*
+* Funzione: stampaTabella
+* ---
+* Visualizza tutti gli studenti registrati.
+*/
+void stampaTabella() {
+    int i;
 
-    if (!tabella) { // controllo esistenza tabella
+    if (!tabella) {
         printf("Errore: tabella non inizializzata.\n");
         return;
     }
 
-    if (tabella->dimensione == 0) { // controllo tabella vuota
+    if (tabella->dimensione == 0) {
         printf("Nessuno studente registrato.\n");
         return;
     }
 
-    printf("=== Studenti registrati (%d) ===\n", tabella->dimensione); // header con conteggio
+    printf("=== Studenti registrati (%d) ===\n", tabella->dimensione);
 
-    for (i = 0; i < tabella->capacita; i++) // itera su tutta la memoria allocata
-        if (tabella->celle[i].occupato == 1) // considera solo slot con dati validi
-            stampaStudente(&tabella->celle[i]); // stampa studente corrente
+    for (i = 0; i < tabella->capacita; i++)
+        if (tabella->celle[i].occupato == 1)
+            stampaStudente(&tabella->celle[i]);
 }
 
-// GETTER
+// --- GETTER ---
 
-const char *getMatricola(studente s) { // accesso sicuro alla matricola
+const char *getMatricola(studente s) {
     if (s != NULL)
-        return s->matricola; // ritorna puntatore stringa matricola
+        return s->matricola;
     else
-        return NULL; // puntatore non valido
+        return NULL;
 }
 
-const char *getNome(studente s) { // accesso sicuro al nome
+const char *getNome(studente s) {
     if (s != NULL)
-        return s->nome; // ritorna puntatore stringa nome
+        return s->nome;
     else
-        return NULL; // puntatore non valido
+        return NULL;
 }
 
-const char *getCognome(studente s) { // accesso sicuro al cognome
+const char *getCognome(studente s) {
     if (s != NULL)
-        return s->cognome; // ritorna puntatore stringa cognome
+        return s->cognome;
     else
-        return NULL; // puntatore non valido
+        return NULL;
 }
 
-const char *getCorsoDiLaurea(studente s) { // accesso sicuro al corso
+const char *getCorsoDiLaurea(studente s) {
     if (s != NULL)
-        return s->corsoDiLaurea; // ritorna puntatore stringa corso
+        return s->corsoDiLaurea;
     else
-        return NULL; // puntatore non valido
+        return NULL;
 }
