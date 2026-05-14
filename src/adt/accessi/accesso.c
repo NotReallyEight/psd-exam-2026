@@ -16,7 +16,7 @@ struct accesso
 Accesso creaAccesso(const char *matricola, const char *data, int fasciaOraria, int postoAssegnato, int haPrenotazione)
 {
   // Alloca memoria per un nuovo accesso
-  Accesso nuovoAccesso = malloc(sizeof(Accesso));
+  Accesso nuovoAccesso = malloc(sizeof(struct accesso));
 
   // Se l'allocazione fallisce, restituisce NULL
   if (nuovoAccesso == NULL)
