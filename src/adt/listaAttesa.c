@@ -11,7 +11,7 @@
 *
 * Autore: Raffaele Severino
 * Data inizio: 02/04/2026
-* Data ultima modifica: 13/05/2026
+* Data ultima modifica: 18/05/2026
 */
 
 #include <stdio.h>
@@ -384,6 +384,34 @@ int dimensioneCoda(int fasciaOraria) {
     }
 
     return code[fasciaOraria].dimensione;
+}
+
+
+
+/*
+* Funzione: resetCoda
+* ---
+* Svuota tutte le code e reimposta lo stato iniziale.
+*/
+void resetCoda() {
+    int i;
+    elementoCodaInterno *curr, *next;
+
+    for (i = 0; i < NUM_FASCE; i++) {
+        curr = code[i].testa;
+
+        while (curr) {
+            next = curr->next;
+            liberaNodo(curr);
+            curr = next;
+        }
+
+        code[i].testa = NULL;
+        code[i].coda = NULL;
+        code[i].dimensione = 0;
+    }
+
+    inizializzato = 0;
 }
 
 // --- GETTER ---
