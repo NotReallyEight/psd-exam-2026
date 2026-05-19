@@ -185,6 +185,17 @@ int dimensioneCoda(int fasciaOraria);
 
 
 
+/*
+ * Funzione: resetCoda
+ * ---
+ * Svuota tutte le code e reimposta lo stato iniziale.
+ *
+ * Usata nei test per garantire l'indipendenza
+ * tra una funzione di test e l'altra.
+ */
+void resetCoda();
+
+
 
 
 /*
